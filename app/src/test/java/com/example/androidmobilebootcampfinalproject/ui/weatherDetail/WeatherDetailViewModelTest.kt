@@ -129,7 +129,7 @@ class WeatherDetailViewModelTest {
         val alert = "no"
 
         val result = Result.Loading
-        val channel = Channel<Result<Result.Loading>>()
+        val channel = Channel<Result.Loading>()
         val flow = channel.consumeAsFlow()
 
 

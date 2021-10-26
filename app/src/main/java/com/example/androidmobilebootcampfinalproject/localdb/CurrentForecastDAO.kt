@@ -15,5 +15,6 @@ interface CurrentForecastDAO {
     @Query("SELECT * FROM CURRENTS")
     suspend fun fetchCurrentForecasts() : MutableList<CurrentResponse>
 
+
 }
 

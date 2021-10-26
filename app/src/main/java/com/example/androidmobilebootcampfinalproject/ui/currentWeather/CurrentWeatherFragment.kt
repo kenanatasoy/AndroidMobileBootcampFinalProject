@@ -1,10 +1,14 @@
 package com.example.androidmobilebootcampfinalproject.ui.currentWeather
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -18,6 +22,10 @@ import com.example.androidmobilebootcampfinalproject.ui.weatherDetail.WeatherDet
 import com.example.androidmobilebootcampfinalproject.utils.SemicolonTokenizer
 import com.example.androidmobilebootcampfinalproject.utils.showToast
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * A simple [Fragment] subclass.
@@ -43,6 +51,7 @@ class CurrentWeatherFragment :
 
     override fun prepareView() {
 
+
         // initial setup of the multiautocompletetextview adapter
         mactvAdapter = ArrayAdapter(
             requireContext(),
@@ -51,7 +60,6 @@ class CurrentWeatherFragment :
 
         dataBinding.multiAutoCompleteTextView.setAdapter(mactvAdapter)
         dataBinding.multiAutoCompleteTextView.setTokenizer(SemicolonTokenizer())
-
 
         // initial setup of the current forecasts and observing
         viewModel.prepareCurrentForecastsFromDB()
@@ -67,7 +75,6 @@ class CurrentWeatherFragment :
 
             }
         }
-
 
 
 
@@ -91,6 +98,8 @@ class CurrentWeatherFragment :
 
 
 
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun observeLiveData() {
 
 
@@ -143,6 +152,16 @@ class CurrentWeatherFragment :
             dataBinding.executePendingBindings()
 
             currentForecasts = dataBinding.currentWeatherViewStateModel!!.getCurrentForecasts()!!
+
+            if(currentForecasts.size != 0){
+                val currentDate = LocalDate.now()
+//                val dbUnformattedForecastsDate = currentForecasts[0].location.localtime
+                val dbFormattedForecastsDate = currentForecasts[0].location.localtime.dropLast(6)
+
+                if (!currentDate.equals(dbFormattedForecastsDate)) {
+                    viewModel.updateCurrentForecastsInDB()
+                }
+            }
 
             viewPagerAdapter = ViewPagerAdapter(currentForecasts, this@CurrentWeatherFragment)
             dataBinding.viewPager2.adapter = viewPagerAdapter

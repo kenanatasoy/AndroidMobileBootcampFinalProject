@@ -8,5 +8,6 @@ import com.example.androidmobilebootcampfinalproject.models.CurrentResponse
 abstract class CurrentForecastDB : RoomDatabase() {
 
     abstract fun currentForecastDao() : CurrentForecastDAO
+
 }
 

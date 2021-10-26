@@ -62,8 +62,6 @@ class WeatherForecastRepository(private val api: WeatherAPI, private val current
 
 
 
-
-
     fun insertCurrentForecast(currentResponse: CurrentResponse) = flow<Result<Any>> {
 
         currentForecastDAO.insertCurrentForecast(currentResponse)
@@ -73,7 +71,6 @@ class WeatherForecastRepository(private val api: WeatherAPI, private val current
 
 
 
-//    suspend fun insertDataAsync(currentResponse: CurrentResponse) = currentForecastDAO.insertCurrentForecast(currentResponse)
 
 
 }

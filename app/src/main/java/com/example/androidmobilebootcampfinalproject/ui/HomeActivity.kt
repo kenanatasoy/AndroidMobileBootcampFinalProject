@@ -35,13 +35,11 @@ class HomeActivity : AppCompatActivity(), ScreenActions, KoinComponent {
             if (!isConnected){
                 showToast("No internet connection")
             }
-
             else {
                 showToast("Internet connection is on")
             }
 
         })
-
 
     }
 

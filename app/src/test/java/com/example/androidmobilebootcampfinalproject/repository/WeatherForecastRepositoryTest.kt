@@ -112,6 +112,8 @@ class WeatherForecastRepositoryTest {
 
 
 
+    //the below are the alternative test cases for fetchSearchResultsFromRemote function at repository
+
     @Test
     fun `fetchSearchResultsFromRemoteFlow emits ResultError-alternative-`()  = runBlocking {
 
