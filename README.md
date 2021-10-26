@@ -1,11 +1,13 @@
 # AndroidMobileBootcampFinalProject
 The Bootcamp's final project including practices with coroutines, testing, repository-level flows, di with koin and much more
 
-## An Overview to the App
+## An Overview to the App (Click the image for youtube video)
 **Please, click the image below to navigate to the app's youtube video!**
 
+[![MVVM Weather App Thumbnail](https://user-images.githubusercontent.com/35261110/138877297-2a15c7c5-ee56-428a-a40d-489b19f23fb9.png)](https://youtu.be/Xr4rLfQklFg)
 
 ## Some of the resources i have utilized for this project
+
 https://insert-koin.io/docs/quickstart/<br />
 https://developer.android.com/kotlin/flow<br />
 https://developer.android.com/kotlin/flow/test<br />
