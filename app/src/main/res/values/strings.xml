@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">AndroidMobileBootcampFinalProject</string>
+    <string name="location_select">Select locations</string>
+    <string name="forecast_show">Show forecasts</string>
+    <string name="feels_like">Feels Like</string>
+    <string name="real_temperatures">Real Temp</string>
+    <string name="details">Details ></string>
+    <string name="no_location_selected">No location/locations have been selected yet</string>
+    <string name="no_internet_conn">Please connect to the internet to be able to see the selected location\'s hourly forecasts</string>
+
+    <!-- text size -->
+    <dimen name="text_size_xlarge">38sp</dimen>
+    <dimen name="text_size_large">30sp</dimen>
+    <dimen name="text_size_medium">25sp</dimen>
+    <dimen name="text_size_normal">20sp</dimen>
+    <dimen name="text_size_small">16sp</dimen>
+
+</resources>

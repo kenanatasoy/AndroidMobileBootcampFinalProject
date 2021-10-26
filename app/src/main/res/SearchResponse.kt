@@ -1,0 +1,1 @@
+class SearchResponse : ArrayList<SearchResponseItem>()
