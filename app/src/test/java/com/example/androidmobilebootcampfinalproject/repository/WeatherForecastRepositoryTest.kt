@@ -86,6 +86,9 @@ class WeatherForecastRepositoryTest {
 
 
 
+
+    //the below are the alternative tests for fetchSearchResultsFromRemote function at repository
+
     @Test
     fun `fetchSearchResultsFromRemoteFlow emits ResultSuccess-alternative-`()  = runBlocking {
 
@@ -111,8 +114,6 @@ class WeatherForecastRepositoryTest {
     }
 
 
-
-    //the below are the alternative test cases for fetchSearchResultsFromRemote function at repository
 
     @Test
     fun `fetchSearchResultsFromRemoteFlow emits ResultError-alternative-`()  = runBlocking {
