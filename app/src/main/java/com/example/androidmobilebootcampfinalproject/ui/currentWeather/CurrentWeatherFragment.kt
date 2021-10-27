@@ -4,7 +4,6 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -22,8 +21,6 @@ import com.example.androidmobilebootcampfinalproject.ui.weatherDetail.WeatherDet
 import com.example.androidmobilebootcampfinalproject.utils.SemicolonTokenizer
 import com.example.androidmobilebootcampfinalproject.utils.showToast
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import java.time.LocalDateTime
-import java.time.ZoneId
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -153,19 +150,24 @@ class CurrentWeatherFragment :
 
             currentForecasts = dataBinding.currentWeatherViewStateModel!!.getCurrentForecasts()!!
 
-            if(currentForecasts.size != 0){
-                val currentDate = LocalDate.now()
-//                val dbUnformattedForecastsDate = currentForecasts[0].location.localtime
-                val dbFormattedForecastsDate = currentForecasts[0].location.localtime.dropLast(6)
+            val loadingToast = Toast.makeText(requireContext(), "Loading", Toast.LENGTH_LONG)
 
-                if (!currentDate.equals(dbFormattedForecastsDate)) {
-                    viewModel.updateCurrentForecastsInDB()
+            if(currentForecasts.size != 0){
+                val currentDate = LocalDate.now().toString()
+
+                currentForecasts.forEach { currentForecast ->
+                      val dbForecastDate = currentForecast.current.last_updated.dropLast(6)
+                      if (currentDate != dbForecastDate) {
+                          loadingToast.show()
+                          currentForecasts = viewModel.updateCurrentForecastsInDB()
+                      }
                 }
             }
 
             viewPagerAdapter = ViewPagerAdapter(currentForecasts, this@CurrentWeatherFragment)
             dataBinding.viewPager2.adapter = viewPagerAdapter
             viewPagerAdapter.notifyDataSetChanged()
+            loadingToast.cancel()
 
         })
 

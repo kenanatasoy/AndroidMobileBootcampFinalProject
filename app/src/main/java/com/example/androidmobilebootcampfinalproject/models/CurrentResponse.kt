@@ -6,6 +6,6 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "CURRENTS")
 data class CurrentResponse(
-    @PrimaryKey @Embedded val current: Current,
-    @Embedded val location: Location
+    @Embedded var current: Current,
+    @PrimaryKey @Embedded var location: Location
 )

@@ -16,6 +16,7 @@ import java.net.UnknownHostException
 class WeatherForecastRepository(private val api: WeatherAPI, private val currentForecastDAO: CurrentForecastDAO) {
 
 
+
     fun fetchSearchResultsFromRemote(text: String) = flow<Result<SearchResponse>> {
 
         val searchResponse = api.getSearchResults(API_KEY, text)

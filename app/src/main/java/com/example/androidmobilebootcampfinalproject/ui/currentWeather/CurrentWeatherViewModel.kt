@@ -1,7 +1,5 @@
 package com.example.androidmobilebootcampfinalproject.ui.currentWeather
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,16 +7,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.androidmobilebootcampfinalproject.models.CurrentResponse
 import com.example.androidmobilebootcampfinalproject.models.SearchResponse
 import com.example.androidmobilebootcampfinalproject.repository.WeatherForecastRepository
-import com.example.androidmobilebootcampfinalproject.ui.HomeActivity
 import com.example.androidmobilebootcampfinalproject.utils.Result
-import com.example.androidmobilebootcampfinalproject.utils.startActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.util.*
+import kotlinx.coroutines.runBlocking
 
 class CurrentWeatherViewModel(private val weatherForecastRepository: WeatherForecastRepository) :
     ViewModel() {
@@ -62,47 +56,6 @@ class CurrentWeatherViewModel(private val weatherForecastRepository: WeatherFore
     }
 
 
-    fun updateCurrentForecastsInDB() = viewModelScope.launch {
-
-            var currentResponsesToUpdate: MutableList<CurrentResponse> = mutableListOf()
-
-            weatherForecastRepository.fetchCurrentForecastsFromDatabase()
-                .collect {
-                    when (it) {
-                        is Result.Success -> {
-                            it.data.forEach { currentResponse ->
-                                currentResponsesToUpdate.add(currentResponse)
-                            }
-                        }
-                    }
-                }
-
-            var updatedCurrentResponses: MutableList<CurrentResponse> = mutableListOf()
-
-            currentResponsesToUpdate.forEach { currentResponse ->
-
-                lateinit var updatedCurrentResponse: CurrentResponse
-                weatherForecastRepository.fetchCurrentForecastFromRemote(currentResponse.location.name,"no")
-                    .collect {
-                        when (it) {
-                            is Result.Success -> {
-                                updatedCurrentResponse = it.data
-                                updatedCurrentResponses.add(it.data)
-                            }
-                        }
-                    }
-
-                weatherForecastRepository.insertCurrentForecast(updatedCurrentResponse).single()
-            }
-
-            _onCurrentForecastsFetchedFromDB.value =
-                CurrentWeatherViewStateModel(updatedCurrentResponses)
-
-
-
-    }
-
-
     fun prepareCurrentForecastFromRemote(location: String) = viewModelScope.launch {
 
         weatherForecastRepository.fetchCurrentForecastFromRemote(location, "no")
@@ -133,6 +86,87 @@ class CurrentWeatherViewModel(private val weatherForecastRepository: WeatherFore
                 }
             }
     }
+
+
+
+    fun updateCurrentForecastsInDB(): MutableList<CurrentResponse> {
+
+        // first of all, we define an empty current forecasts list(which will later
+        // be filled with updated current forecasts and returned later in the code)
+        // outside the runBlocking block to be able to return it,
+        // return command inside runBlocking block is not valid
+        var updatedCurrentResponses: MutableList<CurrentResponse> = mutableListOf()
+
+        runBlocking(Dispatchers.Default) {
+
+            // then here, what we're simply doing is creating a empty current forecasts list
+            // and filling it with the current forecasts that are stored in the room database
+            var currentResponsesInDbToUpdate: MutableList<CurrentResponse> = mutableListOf()
+            weatherForecastRepository.fetchCurrentForecastsFromDatabase()
+                .collect {
+                    when (it) {
+                        is Result.Success -> {
+                            it.data.forEach { currentResponseInDb ->
+                                currentResponsesInDbToUpdate.add(currentResponseInDb)
+                            }
+                        }
+                    }
+                }
+
+
+            // after filling it with the data from the local DB,
+            // we're iterating over every item of the list,
+            // to be able to update them with the most current information
+            currentResponsesInDbToUpdate.forEach { currentResponseInDb ->
+
+                // here, we're giving every item's location name
+                // to the method in the repository that'll get
+                // the most current forecast information of each location
+                weatherForecastRepository.fetchCurrentForecastFromRemote(currentResponseInDb.location.name,"no")
+                    .collect { currentResponseFromRemote ->
+                        when (currentResponseFromRemote) {
+                            is Result.Success -> {
+
+                                // if the one's name(which is in the local database) matches the one's name
+                                // that's coming from the api, then we're updating the one's info in the database
+                                // with the most current info of the one that's coming from the api
+                                if (currentResponseInDb.location.name == currentResponseFromRemote.data.location.name) {
+                                    currentResponseInDb.current.currentCondition.icon = currentResponseFromRemote.data.current.currentCondition.icon
+                                    currentResponseInDb.current.currentCondition.text = currentResponseFromRemote.data.current.currentCondition.text
+                                    currentResponseInDb.current.feelslike_c = currentResponseFromRemote.data.current.feelslike_c
+                                    currentResponseInDb.current.feelslike_f = currentResponseFromRemote.data.current.feelslike_f
+                                    currentResponseInDb.current.temp_c = currentResponseFromRemote.data.current.temp_c
+                                    currentResponseInDb.current.temp_f = currentResponseFromRemote.data.current.temp_f
+                                    currentResponseInDb.current.last_updated = currentResponseFromRemote.data.current.last_updated
+                                }
+
+                                // and here we're filling the list(that we defined outside
+                                // the runBlocking block) with the most current forecasts
+                                // that just came from the api
+                                updatedCurrentResponses.add(currentResponseFromRemote.data)
+                            }
+                        }
+                    }
+
+                // and here we're inserting each current forecast (which we fetched
+                // from the local DB then updated) to back in the database,
+                // since their primary key(location name) hasn't changed,
+                // they're basically the same entries of the local DB
+                // with the most current available weather forecasts
+                // on this conflict, the room database will only update existent entries' info
+                // and not treat them as completely new entries therefore it'll not create new entries
+                weatherForecastRepository.insertCurrentForecast(currentResponseInDb).single()
+            }
+
+
+        }
+
+        // and here outside the runBlocking block,
+        // we're just returning the most up-to-date current forecasts list
+        return updatedCurrentResponses
+
+    }
+
 
 
 }

@@ -5,6 +5,6 @@ import androidx.room.Entity
 
 @Entity
 data class Condition(
-    @ColumnInfo(name = "icon") val icon: String,
-    @ColumnInfo(name = "text") val text: String
+    @ColumnInfo(name = "icon") var icon: String,
+    @ColumnInfo(name = "text") var text: String
 )

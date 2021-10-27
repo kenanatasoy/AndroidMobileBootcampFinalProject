@@ -8,8 +8,9 @@ import com.google.gson.annotations.SerializedName
 @Entity
 data class Current(
     @Embedded @SerializedName("condition") val currentCondition: Condition,
-    @ColumnInfo(name = "feelslike_c") val feelslike_c: Double,
-    @ColumnInfo(name = "feelslike_f") val feelslike_f: Double,
-    @ColumnInfo(name = "temp_c") val temp_c: Double,
-    @ColumnInfo(name = "temp_f") val temp_f: Double,
+    @ColumnInfo(name = "feelslike_c") var feelslike_c: Double,
+    @ColumnInfo(name = "feelslike_f") var feelslike_f: Double,
+    @ColumnInfo(name = "temp_c") var temp_c: Double,
+    @ColumnInfo(name = "temp_f") var temp_f: Double,
+    @ColumnInfo(name = "last_updated") var last_updated: String
 )
