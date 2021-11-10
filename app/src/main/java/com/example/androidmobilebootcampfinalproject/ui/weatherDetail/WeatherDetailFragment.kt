@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.androidmobilebootcampfinalproject.R
 import com.example.androidmobilebootcampfinalproject.adapters.HourForecastAdapter
 import com.example.androidmobilebootcampfinalproject.base.BaseFragment
+import com.example.androidmobilebootcampfinalproject.databinding.FragmentCurrentWeatherBinding
 import com.example.androidmobilebootcampfinalproject.databinding.FragmentWeatherDetailBinding
 import com.example.androidmobilebootcampfinalproject.models.Hour
 import com.example.androidmobilebootcampfinalproject.network.ConnectionLiveData2
@@ -24,6 +25,9 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
  */
 
 class WeatherDetailFragment : BaseFragment<WeatherDetailViewModel, FragmentWeatherDetailBinding>() {
+
+    override var _dataBinding: FragmentWeatherDetailBinding? = null
+    val dataBinding get() = _dataBinding!!
 
     var location: String = ""
 
@@ -64,10 +68,10 @@ class WeatherDetailFragment : BaseFragment<WeatherDetailViewModel, FragmentWeath
 
 
         val weatherDetailsLoadingToast = Toast.makeText(requireContext(), "Loading", Toast.LENGTH_SHORT)
-
         viewModel.onWeatherDetailsLoading.observe(viewLifecycleOwner, {
             weatherDetailsLoadingToast.show()
         })
+
 
 
         viewModel.onWeatherDetailsFetched.observe(viewLifecycleOwner, {
@@ -85,8 +89,8 @@ class WeatherDetailFragment : BaseFragment<WeatherDetailViewModel, FragmentWeath
         })
 
 
-        viewModel.onWeatherDetailsError.observe(viewLifecycleOwner, {
 
+        viewModel.onWeatherDetailsError.observe(viewLifecycleOwner, {
             weatherDetailsLoadingToast.cancel()
             dataBinding.noHourForecasts.visibility = View.VISIBLE
             dataBinding.hourForecastRecycler.visibility = View.GONE
@@ -97,7 +101,6 @@ class WeatherDetailFragment : BaseFragment<WeatherDetailViewModel, FragmentWeath
 
 
     }
-
 
 
 }

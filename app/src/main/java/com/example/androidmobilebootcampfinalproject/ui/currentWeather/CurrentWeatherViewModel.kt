@@ -1,5 +1,7 @@
 package com.example.androidmobilebootcampfinalproject.ui.currentWeather
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,25 +10,26 @@ import com.example.androidmobilebootcampfinalproject.models.CurrentResponse
 import com.example.androidmobilebootcampfinalproject.models.SearchResponse
 import com.example.androidmobilebootcampfinalproject.repository.WeatherForecastRepository
 import com.example.androidmobilebootcampfinalproject.utils.Result
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.single
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import java.time.LocalDate
 
 class CurrentWeatherViewModel(private val weatherForecastRepository: WeatherForecastRepository) :
     ViewModel() {
 
 
     private val _onCurrentForecastsFetchedFromDB = MutableLiveData<CurrentWeatherViewStateModel>()
-    val onCurrentForecastsFetchedFromDB: LiveData<CurrentWeatherViewStateModel> = _onCurrentForecastsFetchedFromDB
+    val onCurrentForecastsFetchedFromDB: LiveData<CurrentWeatherViewStateModel> =
+        _onCurrentForecastsFetchedFromDB
 
     private val _onCurrentForecastsFromDBError = MutableLiveData<Unit>()
     val onCurrentForecastsFromDBError: LiveData<Unit> = _onCurrentForecastsFromDBError
 
 
     private val _onCurrentForecastFetchedFromRemote = MutableLiveData<CurrentResponse>()
-    val onCurrentForecastFetchedFromRemote: LiveData<CurrentResponse> = _onCurrentForecastFetchedFromRemote
+    val onCurrentForecastFetchedFromRemote: LiveData<CurrentResponse> =
+        _onCurrentForecastFetchedFromRemote
 
     private val _onCurrentForecastFromRemoteError = MutableLiveData<Unit>()
     val onCurrentForecastFromRemoteError: LiveData<Unit> = _onCurrentForecastFromRemoteError
@@ -88,7 +91,6 @@ class CurrentWeatherViewModel(private val weatherForecastRepository: WeatherFore
     }
 
 
-
     fun updateCurrentForecastsInDB(): MutableList<CurrentResponse> {
 
         // first of all, we define an empty current forecasts list(which will later
@@ -122,7 +124,10 @@ class CurrentWeatherViewModel(private val weatherForecastRepository: WeatherFore
                 // here, we're giving every item's location name
                 // to the method in the repository that'll get
                 // the most current forecast information of each location
-                weatherForecastRepository.fetchCurrentForecastFromRemote(currentResponseInDb.location.name,"no")
+                weatherForecastRepository.fetchCurrentForecastFromRemote(
+                    currentResponseInDb.location.name,
+                    "no"
+                )
                     .collect { currentResponseFromRemote ->
                         when (currentResponseFromRemote) {
                             is Result.Success -> {
@@ -131,13 +136,20 @@ class CurrentWeatherViewModel(private val weatherForecastRepository: WeatherFore
                                 // that's coming from the api, then we're updating the one's info in the database
                                 // with the most current info of the one that's coming from the api
                                 if (currentResponseInDb.location.name == currentResponseFromRemote.data.location.name) {
-                                    currentResponseInDb.current.currentCondition.icon = currentResponseFromRemote.data.current.currentCondition.icon
-                                    currentResponseInDb.current.currentCondition.text = currentResponseFromRemote.data.current.currentCondition.text
-                                    currentResponseInDb.current.feelslike_c = currentResponseFromRemote.data.current.feelslike_c
-                                    currentResponseInDb.current.feelslike_f = currentResponseFromRemote.data.current.feelslike_f
-                                    currentResponseInDb.current.temp_c = currentResponseFromRemote.data.current.temp_c
-                                    currentResponseInDb.current.temp_f = currentResponseFromRemote.data.current.temp_f
-                                    currentResponseInDb.current.last_updated = currentResponseFromRemote.data.current.last_updated
+                                    currentResponseInDb.current.currentCondition.icon =
+                                        currentResponseFromRemote.data.current.currentCondition.icon
+                                    currentResponseInDb.current.currentCondition.text =
+                                        currentResponseFromRemote.data.current.currentCondition.text
+                                    currentResponseInDb.current.feelslike_c =
+                                        currentResponseFromRemote.data.current.feelslike_c
+                                    currentResponseInDb.current.feelslike_f =
+                                        currentResponseFromRemote.data.current.feelslike_f
+                                    currentResponseInDb.current.temp_c =
+                                        currentResponseFromRemote.data.current.temp_c
+                                    currentResponseInDb.current.temp_f =
+                                        currentResponseFromRemote.data.current.temp_f
+                                    currentResponseInDb.current.last_updated =
+                                        currentResponseFromRemote.data.current.last_updated
                                 }
 
                                 // and here we're filling the list(that we defined outside
@@ -167,6 +179,39 @@ class CurrentWeatherViewModel(private val weatherForecastRepository: WeatherFore
 
     }
 
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun renewedUpdateCurrentForecastsInDB(currentForecasts: MutableList<CurrentResponse>) =
+        viewModelScope.async(Dispatchers.Main) {
+
+            val updatedCurrentResponses = currentForecasts.toMutableList()
+
+            if (currentForecasts.isNotEmpty()) {
+                val currentDate = LocalDate.now().toString()
+
+                currentForecasts.forEach { currentForecast ->
+
+                    val dbForecastDate = currentForecast.current.last_updated.dropLast(6)
+
+                    if (currentDate != dbForecastDate) {
+                        weatherForecastRepository.fetchCurrentForecastFromRemote(currentForecast.location.name,"no")
+                            .collect { currentResponseFromRemote ->
+                                when (currentResponseFromRemote) {
+                                    is Result.Success -> {
+                                        updatedCurrentResponses.remove(currentForecast)
+                                        weatherForecastRepository.updateCurrentForecast(
+                                            currentResponseFromRemote.data
+                                        ).single()
+                                        updatedCurrentResponses.add(currentResponseFromRemote.data)
+                                    }
+                                    else -> { }
+                                }
+                            }
+                    }
+                }
+            }
+            updatedCurrentResponses
+        }
 
 
 }

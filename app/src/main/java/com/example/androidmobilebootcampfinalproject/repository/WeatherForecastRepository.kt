@@ -7,14 +7,14 @@ import com.example.androidmobilebootcampfinalproject.models.SearchResponse
 import com.example.androidmobilebootcampfinalproject.network.WeatherAPI
 import com.example.androidmobilebootcampfinalproject.utils.API_KEY
 import com.example.androidmobilebootcampfinalproject.utils.Result
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
-import java.net.UnknownHostException
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.single
 
 
 class WeatherForecastRepository(private val api: WeatherAPI, private val currentForecastDAO: CurrentForecastDAO) {
-
 
 
     fun fetchSearchResultsFromRemote(text: String) = flow<Result<SearchResponse>> {
@@ -70,6 +70,18 @@ class WeatherForecastRepository(private val api: WeatherAPI, private val current
 
     }.flowOn(Dispatchers.IO)
 
+
+
+
+    fun updateCurrentForecast(currentResponse: CurrentResponse) = flow<Result<Any>> {
+
+        currentForecastDAO.updateCurrentForecast(currentResponse.location.name, currentResponse.current.currentCondition.icon,
+            currentResponse.current.currentCondition.text, currentResponse.current.feelslike_c,
+            currentResponse.current.feelslike_f, currentResponse.current.temp_c, currentResponse.current.temp_f,
+            currentResponse.current.last_updated)
+        emit(Result.Success(Unit))
+
+    }.flowOn(Dispatchers.IO)
 
 
 
